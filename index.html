@@ -152,6 +152,7 @@
                     
                 };
             };
+//Crear controles 
 
             controls.updateMotor();
 
@@ -160,99 +161,37 @@
             gui.domElement.style.top = '20px';
             gui.domElement.style.left = '20px';
 
-            var generalFolder = gui.addFolder('general');
-            generalFolder.add(controls, "acceleration", 0, 15).onChange(controls.updateMotor);
-            generalFolder.add(controls, "velocity", -10, 10).onChange(controls.updateMotor);
-
-            var hingeFolder = gui.addFolder('hinge');
-            hingeFolder.add(controls, "enableMotor").onChange(controls.updateMotor);
-
             var sliderFolder = gui.addFolder('sliders');
             sliderFolder.add(controls, "sliderLeft").onChange(controls.sliderLeft);
             sliderFolder.add(controls, "sliderRight").onChange(controls.sliderRight);
 
-            var coneTwistFolder = gui.addFolder('coneTwist');
-            coneTwistFolder.add(controls, "enableConeTwistMotor").onChange(controls.updateCone);
-            coneTwistFolder.add(controls, "motorTargetX", -Math.PI / 2, Math.PI / 2).onChange(controls.updateCone);
-            coneTwistFolder.add(controls, "motorTargetY", -Math.PI / 2, Math.PI / 2).onChange(controls.updateCone);
-            coneTwistFolder.add(controls, "motorTargetZ", -Math.PI / 2, Math.PI / 2).onChange(controls.updateCone);
-
-            var spheresFolder = gui.addFolder('spheres');
-            spheresFolder.add(controls, "clearMeshes").onChange(controls.updateMotor);
-            spheresFolder.add(controls, "addSpheres").onChange(controls.updateMotor);
-
-
             requestAnimationFrame(render);
             scene.simulate();
         };
+        
 //Crear plano 
         function createGround() {
-            // Materials
+ // Materiales
             ground_material = Physijs.createMaterial(
                     new THREE.MeshPhongMaterial(
                             {
                              map: THREE.ImageUtils.loadTexture('../assets/floor-wood.jpg')
-                            }),
-                    .9, // high friction
-                    .7 // low restitution
-            );
-
-            // Ground
+                            })
+                            );
+// Ground
             ground = new Physijs.BoxMesh(
                     new THREE.BoxGeometry(60, 1, 65),
                     ground_material,
                     0 // mass
             );
-
             ground.receiveShadow = true;
-
-
-            var borderLeft = new Physijs.BoxMesh(
-                    new THREE.BoxGeometry(2, 6, 65),
-                    ground_material,
-                    0 // mass
-            );
-
-            borderLeft.position.x = -31;
-            borderLeft.position.y = 2;
-            borderLeft.receiveShadow = true;
-
-
-            ground.add(borderLeft);
-
-            var borderRight = new Physijs.BoxMesh(new THREE.BoxGeometry(2, 6, 65),
-                    ground_material,
-                    0 // mass
-            );
-            borderRight.position.x = 31;
-            borderRight.position.y = 2;
-            borderRight.receiveShadow = true;
-
-            ground.add(borderRight);
-
-
-            var borderBottom = new Physijs.BoxMesh(
-                    new THREE.BoxGeometry(64, 6, 2),
-                    ground_material,
-                    0 // mass
-            );
-
-            borderBottom.position.z = 32;
-            borderBottom.position.y = 1.5;
-            borderBottom.receiveShadow = true;
-            ground.add(borderBottom);
-
             var borderTop = new Physijs.BoxMesh(
                     new THREE.BoxGeometry(64, 6, 2),
                     ground_material,
                     0 // mass
             );
 
-            borderTop.position.z = -32;
-            borderTop.position.y = 2;
-            borderTop.receiveShadow = true;
-
-            ground.add(borderTop);
+         
 
             ground.receiveShadow = true;
 
@@ -334,7 +273,7 @@
 
         
 
-        var direction = 1;
+        var direction = -2;
 
         
         render = function () {
