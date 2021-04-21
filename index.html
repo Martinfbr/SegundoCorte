@@ -1,3 +1,4 @@
+<-- Martin Balbin  -->
 <!DOCTYPE html>
 
 <html>
@@ -5,42 +6,33 @@
 <head>
     <style>
         body {
-            /* set margin to 0 and overflow to hidden, to go fullscreen */
+            /*El margen en 0 y el desbordamiento en oculto, para la pantalla completa*/
             margin: 0;
             overflow: hidden;
             background-color: #000000;
         }
     </style>
 
-    <title>Physijs Constraints</title>
+    <title>Parcial Segundo corte</title>
 
     <script type="text/javascript" src="../libs/three.js"></script>
     <script type="text/javascript" src="../libs/stats.js"></script>
     <script type="text/javascript" src="../libs/physi.js"></script>
     <script type="text/javascript" src="../libs/dat.gui.js"></script>
     <script type="text/javascript" src="../libs/chroma.js"></script>
-
     <script type="text/javascript">
+    Physijs.scripts.worker = '../libs/physijs_worker.js';
+    Physijs.scripts.ammo = '../libs/ammo.js';
 
-        
-
-        Physijs.scripts.worker = '../libs/physijs_worker.js';
-        Physijs.scripts.ammo = '../libs/ammo.js';
-
-        var scale = chroma.scale(['white', 'blue', 'red', 'yellow']);
-
-
-        var initScene, render, applyForce, setMousePosition, mouse_position,
-                ground_material, box_material,
-                projector, renderer, render_stats, physics_stats, scene, ground, light, camera, box, boxes = [];
+    var initScene, render, ground_material, box_material,
+                projector, renderer, render_stats, physics_stats, scene, ground, light, camera, box;
 
         initScene = function () {
             projector = new THREE.Projector;
 
             renderer = new THREE.WebGLRenderer({antialias: true});
             renderer.setSize(window.innerWidth, window.innerHeight);
-
-            renderer.setClearColor(new THREE.Color(0x000000));
+            renderer.setClearColor(new THREE.Color(0x00ffff));
             renderer.shadowMapEnabled = true;
 
 
@@ -53,11 +45,11 @@
             render_stats.domElement.style.zIndex = 100;
             document.getElementById('viewport').appendChild(render_stats.domElement);
 
-
+//Crear Scena
             scene = new Physijs.Scene({reportSize: 10, fixedTimeStep: 1 / 60});
 
             scene.setGravity(new THREE.Vector3(0, -10, 0));
-
+//Crear camara
             camera = new THREE.PerspectiveCamera(
                     35,
                     window.innerWidth / window.innerHeight,
@@ -68,7 +60,7 @@
             camera.lookAt(new THREE.Vector3(0, 0, 0));
             scene.add(camera);
 
-            // Light
+ // Light
             light = new THREE.SpotLight(0xFFFFFF);
             light.position.set(20, 50, 50);
             light.castShadow = true;
@@ -78,33 +70,23 @@
 
 
             scene.add(light);
+// Iniciamos el plano
+createGround();
 
-
-            var meshes = [];
-
-            createGround();
-           
-           
+//Definimos las variables que van a controlador los movimientos
             var sliderBottomConstraint = createSliderBottom();
             var sliderTopConstraint = createSliderTop();
             
-
+//Definimos la esfera
             var point2point = createPointToPoint(true);
 
-            //Crear controles
+//Crear controles
             var controls = new function () {
                 this.enableMotor = false;
-                this.acceleration = 2;
-                this.velocity = -10;
+                this.acceleration = 10;
+                this.velocity = -20;
 
-                this.enableConeTwistMotor = false;
-                this.motorTargetX = 0;
-                this.motorTargetY = 0;
-                this.motorTargetZ = 0;
-
-              
-
-                this.updateMotor = function () {
+                this.Movimiento = function () {
                  
                 };
 
@@ -118,43 +100,10 @@
                     sliderBottomConstraint.enableLinearMotor(-1 * controls.velocity, controls.acceleration);
                
                 };
-
-                this.clearMeshes = function () {
-                    meshes.forEach(function (e) {
-                        scene.remove(e);
-                    });
-                    meshes = [];
-                };
-
-                this.addSpheres = function () {
-                    var colorSphere = scale(Math.random()).hex();
-                    box = new Physijs.SphereMesh(
-                                new THREE.SphereGeometry(2, 20),
-                                Physijs.createMaterial(
-                                        new THREE.MeshPhongMaterial(
-                                                {
-                                                    color: colorSphere
-//                                                        map: THREE.ImageUtils.loadTexture( '../assets/textures/general/floor-wood.jpg' )
-                                                }),
-                                        controls.sphereFriction,
-                                        controls.sphereRestitution
-                                )
-                                , 0.1);
-                        box.castShadow = true;
-                        box.receiveShadow = true;
-                        box.position.set(
-                                Math.random() * 50 - 25,
-                                20 + Math.random() * 5,
-                                Math.random() * 5
-                        );
-                        meshes.push(box);
-                        scene.add(box);
-                    
-                };
             };
-//Crear controles 
+//Crear controles de movimiento 
 
-            controls.updateMotor();
+            controls.Movimiento();
 
             var gui = new dat.GUI();
             gui.domElement.style.position = 'absolute';
@@ -178,7 +127,7 @@
                              map: THREE.ImageUtils.loadTexture('../assets/floor-wood.jpg')
                             })
                             );
-// Ground
+// suelo o ground
             ground = new Physijs.BoxMesh(
                     new THREE.BoxGeometry(60, 1, 65),
                     ground_material,
@@ -191,37 +140,27 @@
                     0 // mass
             );
 
-         
-
             ground.receiveShadow = true;
-
             scene.add(ground);
         }
 
       
+//Creamos el objeto esfera
 
-        function createPointToPoint() {
-            var obj1 = new THREE.SphereGeometry(2);
-            var obj2 = new THREE.SphereGeometry(2);
-
-            var objectOne = new Physijs.SphereMesh(obj1, Physijs.createMaterial(
-                    new THREE.MeshPhongMaterial({color: 0xff4444, transparent: true, opacity: 0.7}), 0, 0));
+            function createPointToPoint() {
+            var esfera = new THREE.SphereGeometry(2);
+            var objectOne = new Physijs.SphereMesh(esfera, Physijs.createMaterial(
+                    new THREE.MeshPhongMaterial({color: 0xffff00})
+                    ));
+            //Posicion inicial de la esfera
             objectOne.position.z = -18;
-            objectOne.position.x = -10;
+            objectOne.position.x = -1;
             objectOne.position.y = 2;
             objectOne.castShadow = true;
             scene.add(objectOne);
 
-            var objectTwo = new Physijs.SphereMesh(obj2, Physijs.createMaterial(
-                    new THREE.MeshPhongMaterial({color: 0xff4444, transparent: true, opacity: 0.7}), 0, 0));
-            objectTwo.position.z = -5;
-            objectTwo.position.x = -20;
-            objectTwo.position.y = 2;
-            objectTwo.castShadow = true;
-            scene.add(objectTwo);
 
-            // if no position two, its fixed to a position. Else fixed to objectTwo and both will move
-            var constraint = new Physijs.PointConstraint(objectOne, objectTwo, objectTwo.position);
+            var constraint = new Physijs.PointConstraint(objectOne, objectOne.position);
             scene.addConstraint(constraint);
         }
 
@@ -240,10 +179,10 @@
             scene.add(sliderMesh);
             var constraint = new Physijs.SliderConstraint(sliderMesh, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0));
 
+            //Colocamos los limites que debe llevar nuestra barra jugadora
             scene.addConstraint(constraint);
-            constraint.setLimits(-10, 10, 0, 0);
-            constraint.setRestitution(0.1, 0.1);
-
+            constraint.setLimits(-20, 10, 0, 0);
+            
             return constraint;
         }
 
@@ -268,10 +207,6 @@
 
             return constraint;
         }
-
-        
-
-        
 
         var direction = -2;
 
