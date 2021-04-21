@@ -1,232 +1,274 @@
-<-- Martin Balbin  -->
-<!DOCTYPE html>
+<-- Martin Balbin -->
+    <!DOCTYPE html>
 
-<html>
+    <html>
 
-<head>
-    <style>
-        body {
-            /*El margen en 0 y el desbordamiento en oculto, para la pantalla completa*/
-            margin: 0;
-            overflow: hidden;
-            background-color: #000000;
-        }
-    </style>
+    <head>
+        <style>
+            body {
+                /*El margen en 0 y el desbordamiento en oculto, para la pantalla completa*/
+                margin: 0;
+                overflow: hidden;
+                background-color: #000000;
+            }
+        </style>
 
-    <title>Parcial Segundo corte</title>
+        <title>Parcial Segundo corte</title>
 
-    <script type="text/javascript" src="../libs/three.js"></script>
-    <script type="text/javascript" src="../libs/stats.js"></script>
-    <script type="text/javascript" src="../libs/physi.js"></script>
-    <script type="text/javascript" src="../libs/dat.gui.js"></script>
-    <script type="text/javascript" src="../libs/chroma.js"></script>
-    <script type="text/javascript">
-    Physijs.scripts.worker = '../libs/physijs_worker.js';
-    Physijs.scripts.ammo = '../libs/ammo.js';
+        <script type="text/javascript" src="../libs/three.js"></script>
+        <script type="text/javascript" src="../libs/stats.js"></script>
+        <script type="text/javascript" src="../libs/physi.js"></script>
+        <script type="text/javascript" src="../libs/dat.gui.js"></script>
+        <script type="text/javascript" src="../libs/chroma.js"></script>
 
-    var initScene, render, ground_material, box_material,
+    </head>
+
+    <body>
+
+        <div id="viewport"></div>
+
+        <script type="text/javascript">
+            Physijs.scripts.worker = '../libs/physijs_worker.js';
+            Physijs.scripts.ammo = '../libs/ammo.js';
+
+            var initScene, render, ground_material, box_material, barraMesh,
                 projector, renderer, render_stats, physics_stats, scene, ground, light, camera, box;
 
-        initScene = function () {
-            projector = new THREE.Projector;
+             function initScene() {
+                projector = new THREE.Projector;
 
-            renderer = new THREE.WebGLRenderer({antialias: true});
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setClearColor(new THREE.Color(0x00ffff));
-            renderer.shadowMapEnabled = true;
+                renderer = new THREE.WebGLRenderer({ antialias: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.setClearColor(new THREE.Color(0x00ffff));
+                renderer.shadowMapEnabled = true;
 
 
-            document.getElementById('viewport').appendChild(renderer.domElement);
+                document.getElementById('viewport').appendChild(renderer.domElement);
 
-            render_stats = new Stats();
-            render_stats.domElement.style.position = 'absolute';
-            render_stats.domElement.style.top = '1px';
-            render_stats.domElement.style.right = '1px';
-            render_stats.domElement.style.zIndex = 100;
-            document.getElementById('viewport').appendChild(render_stats.domElement);
+                render_stats = new Stats();
+                render_stats.domElement.style.position = 'absolute';
+                render_stats.domElement.style.top = '1px';
+                render_stats.domElement.style.right = '1px';
+                render_stats.domElement.style.zIndex = 100;
+                document.getElementById('viewport').appendChild(render_stats.domElement);
 
-//Crear Scena
-            scene = new Physijs.Scene({reportSize: 10, fixedTimeStep: 1 / 60});
+                //Crear Scena
+                scene = new Physijs.Scene({ reportSize: 10, fixedTimeStep: 1 / 60 });
 
-            scene.setGravity(new THREE.Vector3(0, -10, 0));
-//Crear camara
-            camera = new THREE.PerspectiveCamera(
+                scene.setGravity(new THREE.Vector3(0, -10, 0));
+                //Crear camara
+                camera = new THREE.PerspectiveCamera(
                     35,
                     window.innerWidth / window.innerHeight,
                     1,
                     1000
-            );
-            camera.position.set(40, 80, 65);
-            camera.lookAt(new THREE.Vector3(0, 0, 0));
-            scene.add(camera);
+                );
+                camera.position.set(40, 80, 65);
+                camera.lookAt(new THREE.Vector3(0, 0, 0));
+                scene.add(camera);
 
- // Light
-            light = new THREE.SpotLight(0xFFFFFF);
-            light.position.set(20, 50, 50);
-            light.castShadow = true;
-            light.shadowMapDebug = true;
-            light.shadowCameraNear = 10;
-            light.shadowCameraFar = 100;
+                // Light
+                light = new THREE.SpotLight(0xFFFFFF);
+                light.position.set(20, 50, 50);
+                light.castShadow = true;
+                light.shadowMapDebug = true;
+                light.shadowCameraNear = 10;
+                light.shadowCameraFar = 100;
 
 
-            scene.add(light);
-// Iniciamos el plano
-createGround();
+                scene.add(light);
+                // Iniciamos el plano
+                createGround();
+                addBall();
 
-//Definimos las variables que van a controlador los movimientos
-            var sliderBottomConstraint = createSliderBottom();
-            var sliderTopConstraint = createSliderTop();
-            
-//Definimos la esfera
-            var point2point = createPointToPoint(true);
+                //Definimos las variables que van a controlador los movimientos
+                var sliderBottomConstraint = createSliderBottom();
+                var sliderTopConstraint = createSliderTop();
 
-//Crear controles
-            var controls = new function () {
-                this.enableMotor = false;
-                this.acceleration = 10;
-                this.velocity = -20;
+                //Definimos la esfera
+                var point2point = createPointToPoint(true);
 
-                this.Movimiento = function () {
-                 
+                //Crear controles
+                var controls = new function () {
+                    this.enableMotor = false;
+                    this.acceleration = 10;
+                    this.velocity = -20;
+
+                    this.Movimiento = function () {
+
+                    };
+
+                    this.sliderLeft = function () {
+                        sliderBottomConstraint.disableLinearMotor();
+                        sliderBottomConstraint.enableLinearMotor(controls.velocity, controls.acceleration);
+                    };
+
+                    this.sliderRight = function () {
+                        sliderBottomConstraint.disableLinearMotor();
+                        sliderBottomConstraint.enableLinearMotor(-1 * controls.velocity, controls.acceleration);
+
+                    };
                 };
+                //Crear controles de movimiento 
 
-                this.sliderLeft = function () {
-                    sliderBottomConstraint.disableLinearMotor();
-                    sliderBottomConstraint.enableLinearMotor(controls.velocity, controls.acceleration);
-                  };
+                controls.Movimiento();
 
-                this.sliderRight = function () {
-                    sliderBottomConstraint.disableLinearMotor();
-                    sliderBottomConstraint.enableLinearMotor(-1 * controls.velocity, controls.acceleration);
-               
-                };
+                var gui = new dat.GUI();
+                gui.domElement.style.position = 'absolute';
+                gui.domElement.style.top = '20px';
+                gui.domElement.style.left = '20px';
+
+                var sliderFolder = gui.addFolder('sliders');
+                sliderFolder.add(controls, "sliderLeft").onChange(controls.sliderLeft);
+                sliderFolder.add(controls, "sliderRight").onChange(controls.sliderRight);
+
+                requestAnimationFrame(render);
+                scene.simulate();
             };
-//Crear controles de movimiento 
 
-            controls.Movimiento();
-
-            var gui = new dat.GUI();
-            gui.domElement.style.position = 'absolute';
-            gui.domElement.style.top = '20px';
-            gui.domElement.style.left = '20px';
-
-            var sliderFolder = gui.addFolder('sliders');
-            sliderFolder.add(controls, "sliderLeft").onChange(controls.sliderLeft);
-            sliderFolder.add(controls, "sliderRight").onChange(controls.sliderRight);
-
-            requestAnimationFrame(render);
-            scene.simulate();
-        };
-        
-//Crear plano 
-        function createGround() {
- // Materiales
-            ground_material = Physijs.createMaterial(
+            //Crear plano 
+            function createGround() {
+                // Materiales
+                ground_material = Physijs.createMaterial(
                     new THREE.MeshPhongMaterial(
-                            {
-                             map: THREE.ImageUtils.loadTexture('../assets/floor-wood.jpg')
-                            })
-                            );
-// suelo o ground
-            ground = new Physijs.BoxMesh(
-                    new THREE.BoxGeometry(60, 1, 65),
+                        {
+                            map: THREE.ImageUtils.loadTexture('../assets/floor-wood.jpg')
+                        })
+                );
+                // suelo o ground
+                ground = new Physijs.BoxMesh(
+                    new THREE.BoxGeometry(40, 1, 65),
                     ground_material,
                     0 // mass
-            );
-            ground.receiveShadow = true;
-            var borderTop = new Physijs.BoxMesh(
+                );
+                ground.receiveShadow = true;
+                var borderTop = new Physijs.BoxMesh(
                     new THREE.BoxGeometry(64, 6, 2),
                     ground_material,
                     0 // mass
-            );
+                );
 
-            ground.receiveShadow = true;
-            scene.add(ground);
-        }
+                ground.receiveShadow = true;
+                scene.add(ground);
+            }
 
-      
-//Creamos el objeto esfera
+
+            //Creamos el objeto esfera
 
             function createPointToPoint() {
-            var esfera = new THREE.SphereGeometry(2);
-            var objectOne = new Physijs.SphereMesh(esfera, Physijs.createMaterial(
-                    new THREE.MeshPhongMaterial({color: 0xffff00})
-                    ));
-            //Posicion inicial de la esfera
-            objectOne.position.z = -18;
-            objectOne.position.x = -1;
-            objectOne.position.y = 2;
-            objectOne.castShadow = true;
-            scene.add(objectOne);
+                var esfera = new THREE.SphereGeometry(2);
+                var objectOne = new Physijs.SphereMesh(esfera, Physijs.createMaterial(
+                    new THREE.MeshPhongMaterial({ color: 0xffff00 })
+                ));
+                //Posicion inicial de la esfera
+                objectOne.position.z = 18;
+                objectOne.position.x = -1;
+                objectOne.position.y = 2;
+                objectOne.castShadow = true;
+                scene.add(objectOne);
+                var constraint = new Physijs.SliderConstraint(objectOne, new THREE.Vector3(1, 0, 0), new THREE.Vector3(01, 10, 0));
+                scene.addConstraint(constraint);
+                constraint.setLimits(10, 10, 10, 0);
+
+                return constraint;
+               
+            }
+            function addBall(){
+                var ball_material = Physijs.createMaterial(new THREE.MeshPhongMaterial({ color: 0x0000ff ,shading:THREE.FlatShading}),friction,.9 // good restitution
+                );
+                var ball_geometry = new THREE.SphereGeometry( 2,16,16);
+                    
+                ball = new Physijs.SphereMesh(ball_geometry,ball_material,20);
+                ball.castShadow = true;
+                releaseBall();
+                scene.add( ball );
+                ball.setDamping(0,0.9);
+                
+                ball.addEventListener( 'collision', onCollision);
+            }
+            function releaseBall(){
+                var range =10+Math.random()*30;
+                ball.position.y = 16;
+                ball.position.x = ((2*Math.floor(Math.random()*2))-1)*range;
+                ball.position.z = ((2*Math.floor(Math.random()*2))-1)*range;
+                ball.__dirtyPosition = true;//force new position
+                
+                // You also need to cancel the object's velocity
+                ball.setLinearVelocity(new THREE.Vector3(0, 0, 0));
+                ball.setAngularVelocity(new THREE.Vector3(0, 0, 0));
+            }
+
+            //Creamos la funcion de la barra para el jugador
+            function createSliderBottom() {
+                var BarraJugador = new THREE.BoxGeometry(12, 2, 2);
 
 
-            var constraint = new Physijs.PointConstraint(objectOne, objectOne.position);
-            scene.addConstraint(constraint);
-        }
-
-        function createSliderBottom() {
-            var BarraJugador = new THREE.BoxGeometry(12, 2, 2);
-
-
-            var sliderMesh = new Physijs.BoxMesh(BarraJugador, Physijs.createMaterial(
-                    new THREE.MeshPhongMaterial({color: 0x44ff44, opacity: 0.6, transparent: true}), 0, 0), 0.01);
-            sliderMesh.position.z = 20;
-            sliderMesh.position.x = 6;
-            sliderMesh.position.y = 1.5;
-            sliderMesh.castShadow = true;
+                var sliderMesh = new Physijs.BoxMesh(BarraJugador, Physijs.createMaterial(
+                    new THREE.MeshPhongMaterial({ color: 0x44ff44, opacity: 0.6, transparent: true }), 0, 0), 0.01);
+                sliderMesh.position.z = 20;
+                sliderMesh.position.x = 6;
+                sliderMesh.position.y = 1.5;
+                sliderMesh.castShadow = true;
 
 
-            scene.add(sliderMesh);
-            var constraint = new Physijs.SliderConstraint(sliderMesh, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0));
+                scene.add(sliderMesh);
+                var constraint = new Physijs.SliderConstraint(sliderMesh, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0));
 
-            //Colocamos los limites que debe llevar nuestra barra jugadora
-            scene.addConstraint(constraint);
-            constraint.setLimits(-20, 10, 0, 0);
-            
-            return constraint;
-        }
+                //Colocamos los limites que debe llevar nuestra barra jugadora
+                scene.addConstraint(constraint);
+                constraint.setLimits(-20, 10, 0, 0);
 
-        function createSliderTop() {
-            var BarraMaquina = new THREE.BoxGeometry(12, 2, 2);
+                return constraint;
+            }
+            //Creamos function para la barra automatica 
+            var step = 0;
+            var speed = 0;
+            function createSliderTop() {
 
+                var BarraMaquina = new THREE.BoxGeometry(12, 2, 2);
+                var BarraMaquina = new Physijs.BoxMesh(BarraMaquina, Physijs.createMaterial(
+                    new THREE.MeshPhongMaterial({ color: 0x44ff44, opacity: 0.6, transparent: true }), 0, 0), 0.01);
+                BarraMaquina.position.z = -25;
+                BarraMaquina.position.x = 6;
+                BarraMaquina.position.y = 2;
 
-            var sliderMesh = new Physijs.BoxMesh(BarraMaquina, Physijs.createMaterial(
-                    new THREE.MeshPhongMaterial({color: 0x44ff44, opacity: 0.6, transparent: true}), 0, 0), 0.01);
-            sliderMesh.position.z = -25;
-            sliderMesh.position.x = 6;
-            sliderMesh.position.y = 1.5;
-            scene.add(sliderMesh);
-            sliderMesh.castShadow = true;
-
-            //position is the position of the axis, relative to the ref, based on the current position
-            var constraint = new Physijs.SliderConstraint(sliderMesh, new THREE.Vector3(-10, 0, 20), new THREE.Vector3(Math.PI / 2, 0, 0));
-
-            scene.addConstraint(constraint);
-            constraint.setLimits(-20, 10, 0.5, -0, 5);
-            constraint.setRestitution(0.2, 0.1);
-
-            return constraint;
-        }
-
-        var direction = -2;
-
-        
-        render = function () {
-            requestAnimationFrame(render);
-            renderer.render(scene, camera);
-            render_stats.update();
-            ground.__dirtyRotation = true;
-            scene.simulate(undefined, 2);
-        };
+                step += speed;
+                BarraMaquina.position.x += -1 + (5 * (Math.cos(step)));
+                BarraMaquina.position.x -= 6 + (5 * (Math.sin(step)));
 
 
-        window.onload = initScene;
+                scene.add(BarraMaquina);
+                BarraMaquina.castShadow = true;
+                var constraint = new Physijs.SliderConstraint(BarraMaquina, new THREE.Vector3(0, 2, 0), new THREE.Vector3(10, 1, 1));
 
-    </script>
-</head>
+                //Colocamos los limites que debe llevar nuestra barra jugadora
+                scene.addConstraint(constraint);
+                constraint.setLimits(-20, 10, 0, 0);
 
-<body>
-<div id="viewport"></div>
-</body>
+                return constraint;
 
-</html>
+            }
+
+            var direction = -2;
+
+
+
+
+
+            function render() {
+                requestAnimationFrame(render);
+                render_stats.update();
+                ground.__dirtyRotation = true;
+                scene.simulate(undefined, 2);
+                renderer.render(scene, camera);
+
+
+            };
+
+
+            initScene();
+
+        </script>
+    </body>
+
+    </html>
