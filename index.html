@@ -33,7 +33,8 @@
 
             var initScene, render, ground_material, box_material, barraMesh,
                 projector, renderer, render_stats, physics_stats, scene, ground, light, camera, box;
-
+            var BarraMaquina;
+            
              function initScene() {
                 projector = new THREE.Projector;
 
@@ -41,7 +42,6 @@
                 renderer.setSize(window.innerWidth, window.innerHeight);
                 renderer.setClearColor(new THREE.Color(0x00ffff));
                 renderer.shadowMapEnabled = true;
-
 
                 document.getElementById('viewport').appendChild(renderer.domElement);
 
@@ -79,11 +79,11 @@
                 scene.add(light);
                 // Iniciamos el plano
                 createGround();
-                addBall();
+                
 
                 //Definimos las variables que van a controlador los movimientos
                 var sliderBottomConstraint = createSliderBottom();
-                var sliderTopConstraint = createSliderTop();
+                var sliderTopConstraint = createBarraMaquina();
 
                 //Definimos la esfera
                 var point2point = createPointToPoint(true);
@@ -173,19 +173,7 @@
                 return constraint;
                
             }
-            function addBall(){
-                var ball_material = Physijs.createMaterial(new THREE.MeshPhongMaterial({ color: 0x0000ff ,shading:THREE.FlatShading}),friction,.9 // good restitution
-                );
-                var ball_geometry = new THREE.SphereGeometry( 2,16,16);
-                    
-                ball = new Physijs.SphereMesh(ball_geometry,ball_material,20);
-                ball.castShadow = true;
-                releaseBall();
-                scene.add( ball );
-                ball.setDamping(0,0.9);
-                
-                ball.addEventListener( 'collision', onCollision);
-            }
+         
             function releaseBall(){
                 var range =10+Math.random()*30;
                 ball.position.y = 16;
@@ -221,25 +209,19 @@
                 return constraint;
             }
             //Creamos function para la barra automatica 
-            var step = 0;
-            var speed = 0;
-            function createSliderTop() {
+            
+            function createBarraMaquina() {
 
-                var BarraMaquina = new THREE.BoxGeometry(12, 2, 2);
-                var BarraMaquina = new Physijs.BoxMesh(BarraMaquina, Physijs.createMaterial(
-                    new THREE.MeshPhongMaterial({ color: 0x44ff44, opacity: 0.6, transparent: true }), 0, 0), 0.01);
+                BarraMaquina = new THREE.BoxGeometry(12, 2, 2);
+                BarraMaquina = new Physijs.BoxMesh(BarraMaquina, Physijs.createMaterial(
+                    new THREE.MeshPhongMaterial({ color: 0xff0044, opacity: 0.6, transparent: true }), 0, 0), 0.01);
                 BarraMaquina.position.z = -25;
-                BarraMaquina.position.x = 6;
+                BarraMaquina.position.x = -10;
                 BarraMaquina.position.y = 2;
-
-                step += speed;
-                BarraMaquina.position.x += -1 + (5 * (Math.cos(step)));
-                BarraMaquina.position.x -= 6 + (5 * (Math.sin(step)));
-
-
-                scene.add(BarraMaquina);
                 BarraMaquina.castShadow = true;
-                var constraint = new Physijs.SliderConstraint(BarraMaquina, new THREE.Vector3(0, 2, 0), new THREE.Vector3(10, 1, 1));
+                scene.add(BarraMaquina);
+               
+                var constraint = new Physijs.SliderConstraint(BarraMaquina, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0));
 
                 //Colocamos los limites que debe llevar nuestra barra jugadora
                 scene.addConstraint(constraint);
@@ -248,23 +230,22 @@
                 return constraint;
 
             }
-
-            var direction = -2;
-
-
-
-
-
+            var step=0;
+            const start = Date.now();
+            
             function render() {
-                requestAnimationFrame(render);
+                const timer = Date.now() - start;
+
                 render_stats.update();
                 ground.__dirtyRotation = true;
                 scene.simulate(undefined, 2);
                 renderer.render(scene, camera);
 
+               
+				BarraMaquina.position.x += timer * 0.90;
+                requestAnimationFrame(render);
 
             };
-
 
             initScene();
 
