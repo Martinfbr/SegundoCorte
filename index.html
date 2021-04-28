@@ -15,11 +15,13 @@
 
         <title>Parcial Segundo corte</title>
 
-        <script type="text/javascript" src="./../libs/three.js"></script>
-        <script type="text/javascript" src="./../libs/stats.js"></script>
-        <script type="text/javascript" src="./../libs/physi.js"></script>
-        <script type="text/javascript" src="./../libs/dat.gui.js"></script>
-        <script type="text/javascript" src="./../libs/chroma.js"></script>
+        <script type="text/javascript" src="./libs/three.js"></script>
+        <script type="text/javascript" src="./libs/stats.js"></script>
+        <script type="text/javascript" src="./libs/physi.js"></script>
+        <script type="text/javascript" src="./libs/dat.gui.js"></script>
+        <script type="text/javascript" src="./libs/chroma.js"></script>
+
+        
 
     </head>
 
@@ -202,7 +204,7 @@
                 scene.add(sliderMesh);
                 var constraint = new Physijs.SliderConstraint(sliderMesh, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0));
 
-                //Colocamos los limites que debe llevar nuestra barra jugadora
+            //Colocamos los limites que debe llevar nuestra barra jugadora
                 scene.addConstraint(constraint);
                 constraint.setLimits(-20, 10, 0, 0);
 
