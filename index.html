@@ -30,8 +30,8 @@
         <div id="viewport"></div>
 
         <script type="text/javascript">
-            Physijs.scripts.worker = '../libs/physijs_worker.js';
-            Physijs.scripts.ammo = '../libs/ammo.js';
+            Physijs.scripts.worker = './libs/physijs_worker.js';
+            Physijs.scripts.ammo = './libs/ammo.js';
 
             var initScene, render, ground_material, box_material, barraMesh,
                 projector, renderer, render_stats, physics_stats, scene, ground, light, camera, box;
@@ -134,7 +134,7 @@
                 ground_material = Physijs.createMaterial(
                     new THREE.MeshPhongMaterial(
                         {
-                            map: THREE.ImageUtils.loadTexture('../assets/floor-wood.jpg')
+                            map: THREE.ImageUtils.loadTexture('./assets/floor-wood.jpg')
                         })
                 );
                 // suelo o ground
